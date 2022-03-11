@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Recyclers</h1>
+
+<div id="recyclers">
+  <% @recyclers.each do |recycler| %>
+    <%= render recycler %>
+    <p>
+      <%= link_to "Show this recycler", recycler %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New recycler", new_recycler_path %>
