@@ -1,5 +1,5 @@
 [Unit]
-Description=xt Puma HTTP Server
+Description=greenbot Puma HTTP Server
 After=network.target
 
 # Uncomment for socket activation (see below)
@@ -13,7 +13,7 @@ Type=simple
 User=www-data
 
 # Specify the path to your puma application root
-WorkingDirectory=/var/www/greenbot
+WorkingDirectory=/var/www/greenbot/web
 
 # Helpful for debugging socket activation, etc.
 # Environment=PUMA_DEBUG=1
@@ -28,9 +28,9 @@ WorkingDirectory=/var/www/greenbot
 # Alternatively with a config file (in WorkingDirectory) and
 # comparable `bind` directives
 
-ExecStart=/bin/bash -lc '/var/www/greenbot/bin/puma -C /var/www/greenbot/config/puma-production.rb'
+ExecStart=/bin/bash -lc '/var/www/greenbot/web/bin/puma -C /var/www/greenbot/web/config/puma-production.rb'
 
-ExecStop=/bin/bash -lc '/var/www/greenbot/bin/pumactl -F /var/www/greenbot/config/puma-production.rb stop'
+ExecStop=/bin/bash -lc '/var/www/greenbot/web/bin/pumactl -F /var/www/greenbot/web/config/puma-production.rb stop'
 
 Restart=always
 
