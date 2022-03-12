@@ -109,8 +109,8 @@ def main(cfg):
         model = models.mobilenet_v3_large(pretrained=True, width_mult=1.0,  reduced_tail=False, dilated=False)
         
         # freeze all the parameters in the network
-        for param in model.parameters():
-            param.requires_grad = False
+#        for param in model.parameters():
+#            param.requires_grad = False
             
         # finetuning the convnet
         model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(plastic_dataset.class_map))
