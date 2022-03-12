@@ -1,5 +1,10 @@
 <h1>Recyclers</h1>
 
+Категории:
+<% Category.all.each do |category| %>
+  <%= check_box_tag :name, category.id %> <%= category.name %>
+<% end %>
+
 <div id='map' style='height: 800px;'></div>
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoieXVyeWtvdGx5YXJvdiIsImEiOiJja2M5NGM0djYwOTFqMnhsa2J4ZW1vbHBzIn0.475kMy3wnzKILq9XbTcXig';
@@ -16,8 +21,14 @@
     }));
 
     <% @recyclers.each do |recycler| %>
+    const popup_<%= recycler.id %> = new mapboxgl.Popup({ offset: 25 }).setHTML(
+      '<h3><%= recycler.name&.html_safe %></h3><p><%= recycler.address %></p><ul><%= recycler.categories.map { |c| "<li>#{link_to c.name, c}</li>" }.join("").html_safe %></ul>'
+
+    );
+ 
     const marker_<%= recycler.id %> = new mapboxgl.Marker()
       .setLngLat([<%= recycler.lon %>, <%= recycler.lat %>])
+      .setPopup(popup_<%= recycler.id %>) 
       .addTo(map);
     <% end %>
 </script>
