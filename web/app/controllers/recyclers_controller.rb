@@ -5,6 +5,11 @@ class RecyclersController < ApplicationController
   def index
     @q = Recycler.ransack(params[:q])
     @recyclers = @q.result(distinct: true).includes(:categories)
+
+    lon = @recyclers.map(&:lon).compact
+    lat = @recyclers.map(&:lat).compact
+
+    @center = { lon: lon.reduce(:+) / lon.size, lat: lat.reduce(:+) / lat.size }
   end
 
   # GET /recyclers/1 or /recyclers/1.json
