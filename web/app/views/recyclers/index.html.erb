@@ -14,6 +14,12 @@
     map.addControl(new MapboxLanguage({
       defaultLanguage: 'ru'
     }));
+
+    <% @recyclers.each do |recycler| %>
+    const marker_<%= recycler.id %> = new mapboxgl.Marker()
+      .setLngLat([<%= recycler.lon %>, <%= recycler.lat %>])
+      .addTo(map);
+    <% end %>
 </script>
 
 <div id="recyclers">
