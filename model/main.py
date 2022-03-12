@@ -79,18 +79,28 @@ def main(cfg):
     print(f"Using {device} device")
     
     if cfg.mode == "train":
-        train_data = SevenPlastics(cfg)
-        test_data = SevenPlastics(cfg, is_train=False)
-        train_count = int(0.7 * len(train_data))
-        test_count = int(0.3 * len(test_data))
+#        train_data = SevenPlastics(cfg)
+#        test_data = SevenPlastics(cfg, is_train=False)
+#        train_count = int(0.7 * len(train_data))
+#        test_count = int(0.3 * len(test_data))
+#
+#        # create splitted datasets based on whole data
+#        train_dataset, _ = random_split(train_data, (train_count, len(train_data)-train_count))
+#        test_dataset, _ = random_split(test_data, (test_count, len(test_data)-test_count))
+        
+        plastic_dataset = SevenPlastics(cfg)
 
-        # create splitted datasets based on whole data
-        train_dataset, _ = random_split(train_data, (train_count, len(train_data)-train_count))
-        test_dataset, _ = random_split(test_data, (test_count, len(test_data)-test_count))
+        plastic_dataloader = DataLoader(plastic_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
 
+        train_length=int(0.7 * len(plastic_dataset))
+        test_length=len(plastic_dataset)-train_length
+        
+        train_dataset,test_dataset = random_split(ants_dataset,(train_length,test_length))
+        
         # create data loaders
         train_dataloader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
         test_dataloader = DataLoader(test_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
+
         print(f"train/test dataloader length: {len(train_dataloader.dataset)}/{len(test_dataloader.dataset)}")
         print(f"train/test dataloader batches: {len(train_dataloader)}/{len(test_dataloader)}")
     
