@@ -97,6 +97,8 @@ def main(cfg):
     # load weights
     if cfg.mode == "train":
         model = models.mobilenet_v3_large(pretrained=True)
+        for param in model_conv.parameters():
+            param.requires_grad = False
         # finetuning the convnet
         model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(train_data.class_map))
     
