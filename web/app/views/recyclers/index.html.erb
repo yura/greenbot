@@ -1,6 +1,20 @@
-<p style="color: green"><%= notice %></p>
-
 <h1>Recyclers</h1>
+
+<div id='map' style='height: 800px;'></div>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoieXVyeWtvdGx5YXJvdiIsImEiOiJja2M5NGM0djYwOTFqMnhsa2J4ZW1vbHBzIn0.475kMy3wnzKILq9XbTcXig';
+    const map = new mapboxgl.Map({
+    container: 'map', // container ID
+    style: 'mapbox://styles/mapbox/streets-v11', // style URL
+    center: [38.9884211, 45.0461317], // starting position [lng, lat]
+    zoom: 13 // starting zoom
+    });
+
+    mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
+    map.addControl(new MapboxLanguage({
+      defaultLanguage: 'ru'
+    }));
+</script>
 
 <div id="recyclers">
   <% @recyclers.each do |recycler| %>
