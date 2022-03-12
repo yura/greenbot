@@ -14,6 +14,8 @@ def get_args():
                         help="number of data loading workers (default: 4)")
     parser.add_argument("--epochs", type=int, default=100,
                         help="number of epochs to train (default: 100)")
+    parser.add_argument("--checkpoint", default="", type=str,
+                        help="file with saved checkpoint")
     args = parser.parse_args()
     
     return args
