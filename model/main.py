@@ -5,7 +5,9 @@ from torchvision import models
 from torch.utils.data import DataLoader, random_split
 import torch.nn as nn
 import torch.optim as optim
-from time import time, localtime
+from time import time, localtime, strftime
+import copy
+from os.path import basename
 
 def train(dataloader, model, loss_fn, optimizer, scheduler, device):
     size = len(dataloader.dataset)
@@ -70,6 +72,7 @@ def test(dataloader, model, loss_fn, device, mode):
 
 def main(cfg):
     run_datetime = localtime()
+    print(f"Start at {strftime('%Y-%m-%d_%H-%M-%S',run_datetime)}")
     cfg.norm_mean, cfg.norm_std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
     # get cpu or gpu device for training
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -132,6 +135,12 @@ def main(cfg):
         
     time_elapsed = time() - since
     print(f"\n{cfg.mode.capitalize()} is done in {(time_elapsed // 60):.0f}m {(time_elapsed % 60):.0f}s")
+    
+    # save best model
+    model_file_name = f"./weights/{model.__class__.__name__}_{strftime('%Y-%m-%d_%H-%M-%S', run_datetime)}_{cfg.img_size}_{len(train_data.class_map)}cl_e{cfg.epochs}_acc{best_acc:.4f}_{basename(cfg.dataset_path)}.pth"
+    torch.save(best_model_wts, model_file_name)
+    print(f"Saved PyTorch best model state to {model_file_name}")
+
     
 if __name__ == '__main__':
   cfg = get_args()
