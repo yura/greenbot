@@ -120,9 +120,9 @@ def main(cfg):
     # criterion
     loss_fn = nn.CrossEntropyLoss()
     # optimizer
-    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
+#    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
 #    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
-#    optimizer =
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-3, momentum=0.9, weight_decay=1e-4, eps=0.0316, alpha=0.9)
     
     # decay LR by a factor 0.1 every 5 epochs
 #    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
