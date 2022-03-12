@@ -90,12 +90,12 @@ def main(cfg):
         
         plastic_dataset = SevenPlastics(cfg)
 
-        plastic_dataloader = DataLoader(plastic_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
+#        plastic_dataloader = DataLoader(plastic_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
 
         train_length=int(0.7 * len(plastic_dataset))
         test_length=len(plastic_dataset)-train_length
         
-        train_dataset,test_dataset = random_split(ants_dataset,(train_length,test_length))
+        train_dataset,test_dataset = random_split(plastic_dataset,(train_length,test_length))
         
         # create data loaders
         train_dataloader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
@@ -108,7 +108,7 @@ def main(cfg):
     if cfg.mode == "train":
         model = models.mobilenet_v3_large(pretrained=True, width_mult=1.0,  reduced_tail=False, dilated=False)
         # finetuning the convnet
-        model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(train_data.class_map))
+        model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(plastic_dataset.class_map))
     
     model = model.to(device)
 
@@ -147,7 +147,7 @@ def main(cfg):
     print(f"\n{cfg.mode.capitalize()} is done in {(time_elapsed // 60):.0f}m {(time_elapsed % 60):.0f}s")
     
     # save best model
-    model_file_name = f"./weights/{model.__class__.__name__}_{strftime('%Y-%m-%d_%H-%M-%S', run_datetime)}_{cfg.img_size}_{len(train_data.class_map)}cl_e{cfg.epochs}_acc{best_acc:.4f}_{basename(cfg.dataset_path)}.pth"
+    model_file_name = f"./weights/{model.__class__.__name__}_{strftime('%Y-%m-%d_%H-%M-%S', run_datetime)}_{cfg.img_size}_{len(plastic_dataset.class_map)}cl_e{cfg.epochs}_acc{best_acc:.4f}_{basename(cfg.dataset_path)}.pth"
     torch.save(best_model_wts, model_file_name)
     print(f"Saved PyTorch best model state to {model_file_name}")
 
