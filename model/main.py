@@ -120,7 +120,7 @@ def main(cfg):
     # criterion
     loss_fn = nn.CrossEntropyLoss()
     # optimizer
-    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
 #    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
 #    optimizer =
     
