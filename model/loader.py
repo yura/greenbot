@@ -14,8 +14,8 @@ class SevenPlastics(Dataset):
         if self.is_train:
             self.tranform = T.Compose([
                 T.Resize(cfg.img_size, Image.ANTIALIAS),
-                T.RandomRotation(180),
                 T.RandomHorizontalFlip(),
+                T.RandomRotation(15),
                 T.CenterCrop(cfg.img_size),
                 T.ToTensor()
             ])
