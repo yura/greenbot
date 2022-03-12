@@ -1,5 +1,5 @@
 # greenbot
 
-* web - веб приложение
+* web - веб приложение https://greenbot.yuriykotlyarov.com/
 * tg - telegram бот
 * ios - приложение для iOS
