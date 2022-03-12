@@ -107,13 +107,18 @@ def main(cfg):
     # load weights
     if cfg.mode == "train":
         model = models.mobilenet_v3_large(pretrained=True, width_mult=1.0,  reduced_tail=False, dilated=False)
+        
+        # freeze all the parameters in the network
+        for param in model.parameters():
+            param.requires_grad = False
+            
         # finetuning the convnet
         model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(plastic_dataset.class_map))
     
     model = model.to(device)
 
     # criterion
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss(label_smoothing=1.0)
     # optimizer
     optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
 #    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
