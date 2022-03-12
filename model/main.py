@@ -106,8 +106,7 @@ def main(cfg):
     
     # load weights
     if cfg.mode == "train":
-        model = models.mobilenet_v3_large(pretrained=True)
-#        , width_mult=1.0,  reduced_tail=False, dilated=False)
+        model = models.mobilenet_v3_large(pretrained=True, width_mult=1.0,  reduced_tail=False, dilated=False)
         # finetuning the convnet
         model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(plastic_dataset.class_map))
     
@@ -117,7 +116,8 @@ def main(cfg):
     loss_fn = nn.CrossEntropyLoss()
     # optimizer
 #    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
-    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
+#    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
+
     
     # decay LR by a factor 0.1 every 5 epochs
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
