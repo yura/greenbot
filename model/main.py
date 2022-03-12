@@ -141,7 +141,7 @@ def main(cfg):
         if cfg.mode == "train":
             print(f"\nEpoch {t+1}/{cfg.epochs}\n{'-'*20}")
             train(train_dataloader, model, loss_fn, optimizer, device)
-#            exp_lr_scheduler.step()
+            exp_lr_scheduler.step()
         
         epoch_acc = test(test_dataloader, model, loss_fn, device, cfg.mode)
         
