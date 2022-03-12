@@ -3,7 +3,8 @@ class RecyclersController < ApplicationController
 
   # GET /recyclers or /recyclers.json
   def index
-    @recyclers = Recycler.all
+    @q = Recycler.ransack(params[:q])
+    @recyclers = @q.result(distinct: true).includes(:categories)
   end
 
   # GET /recyclers/1 or /recyclers/1.json

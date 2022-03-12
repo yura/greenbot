@@ -1,37 +1,48 @@
-<h1>Recyclers</h1>
+<h1>Пункты приёма</h1>
 
 Категории:
-<% Category.all.each do |category| %>
-  <%= check_box_tag :name, category.id %> <%= category.name %>
+
+<%= search_form_for @q do |f| %>
+  <% Category.all.each do |category| %>
+    <%= f.check_box :recycler_categories_category_id_in, {multiple: true}, category.id , nil %>
+    <%= category.name %>
+  <% end %>
+
+  <%= f.submit 'Показать' %>
 <% end %>
 
+<div data-turbo='false'>
 <div id='map' style='height: 800px;'></div>
   <script>
+
     mapboxgl.accessToken = 'pk.eyJ1IjoieXVyeWtvdGx5YXJvdiIsImEiOiJja2M5NGM0djYwOTFqMnhsa2J4ZW1vbHBzIn0.475kMy3wnzKILq9XbTcXig';
-    const map = new mapboxgl.Map({
+    var map = new mapboxgl.Map({
     container: 'map', // container ID
     style: 'mapbox://styles/mapbox/streets-v11', // style URL
     center: [38.9884211, 45.0461317], // starting position [lng, lat]
     zoom: 13 // starting zoom
     });
 
-    mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
+    if (mapboxgl.getRTLTextPluginStatus() === 'unavailable') {
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
+    }
     map.addControl(new MapboxLanguage({
       defaultLanguage: 'ru'
     }));
 
     <% @recyclers.each do |recycler| %>
-    const popup_<%= recycler.id %> = new mapboxgl.Popup({ offset: 25 }).setHTML(
+    var popup_<%= recycler.id %> = new mapboxgl.Popup({ offset: 25 }).setHTML(
       '<h3><%= recycler.name&.html_safe %></h3><p><%= recycler.address %></p><ul><%= recycler.categories.map { |c| "<li>#{link_to c.name, c}</li>" }.join("").html_safe %></ul>'
 
     );
  
-    const marker_<%= recycler.id %> = new mapboxgl.Marker()
+    var marker_<%= recycler.id %> = new mapboxgl.Marker()
       .setLngLat([<%= recycler.lon %>, <%= recycler.lat %>])
       .setPopup(popup_<%= recycler.id %>) 
       .addTo(map);
     <% end %>
 </script>
+</div>
 
 <div id="recyclers">
   <% @recyclers.each do |recycler| %>
@@ -41,5 +52,6 @@
     </p>
   <% end %>
 </div>
+
 
 <%= link_to "New recycler", new_recycler_path %>
