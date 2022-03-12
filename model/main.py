@@ -1,3 +1,10 @@
+'''
+Examples:
+python3 main.py --epochs 5 --dataset_path ./datasets/seven_plastics_small
+python3 main.py --mode test --dataset_path ./datasets/seven_plastics_small --checkpoint ./weights/MobileNetV3_2022-03-12_09-36-15_224_8cl_e100_acc0.8495_seven_plastics.pth
+
+'''
+
 from loader import *
 from config import *
 import torch
@@ -78,6 +85,7 @@ def main(cfg):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using {device} device")
     
+    plastic_dataset = SevenPlastics(cfg)
     if cfg.mode == "train":
 #        train_data = SevenPlastics(cfg)
 #        test_data = SevenPlastics(cfg, is_train=False)
@@ -87,10 +95,6 @@ def main(cfg):
 #        # create splitted datasets based on whole data
 #        train_dataset, _ = random_split(train_data, (train_count, len(train_data)-train_count))
 #        test_dataset, _ = random_split(test_data, (test_count, len(test_data)-test_count))
-        
-        plastic_dataset = SevenPlastics(cfg)
-
-#        plastic_dataloader = DataLoader(plastic_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
 
         train_length=int(0.7 * len(plastic_dataset))
         test_length=len(plastic_dataset)-train_length
@@ -103,9 +107,14 @@ def main(cfg):
 
         print(f"train/test dataloader length: {len(train_dataloader.dataset)}/{len(test_dataloader.dataset)}")
         print(f"train/test dataloader batches: {len(train_dataloader)}/{len(test_dataloader)}")
+    # for test and predict
+    else:
+        test_dataloader = DataLoader(plastic_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
+        print(f"test dataloader length: {len(test_dataloader.dataset)}")
+        print(f"test dataloader batches: {len(test_dataloader)}")
     
     # load weights
-    if cfg.mode == "train":
+    if cfg.mode == "train" and not cfg.checkpoint:
         model = models.mobilenet_v3_large(pretrained=True, width_mult=1.0,  reduced_tail=False, dilated=False)
         
         # freeze all the parameters in the network
@@ -114,19 +123,26 @@ def main(cfg):
             
         # finetuning the convnet
         model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(plastic_dataset.class_map))
+    elif cfg.checkpoint:
+        print(f"loading model from checkpoint...")
+        model = models.mobilenet_v3_large()
     
+        # finetuning the convnet
+        model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features, out_features=len(plastic_dataset.class_map))
+        model.load_state_dict(torch.load(cfg.checkpoint, map_location=torch.device(device)))
+    else:
+        raise NotImplementedError(f"Set [--checkpoint] argument value for model testing. Current value: checkpoint={cfg.checkpoint}")
+
     model = model.to(device)
 
     # criterion
     loss_fn = nn.CrossEntropyLoss()
     # optimizer
 #    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
-#    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
     optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-3, momentum=0.9, weight_decay=1e-4, eps=0.0316, alpha=0.9)
     
     # decay LR by a factor 0.1 every 5 epochs
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
-    
     
     since = time()
     predicted_classes_dict = {}
@@ -154,12 +170,12 @@ def main(cfg):
     time_elapsed = time() - since
     print(f"\n{cfg.mode.capitalize()} is done in {(time_elapsed // 60):.0f}m {(time_elapsed % 60):.0f}s")
     
-    # save best model
-    model_file_name = f"./weights/{model.__class__.__name__}_{strftime('%Y-%m-%d_%H-%M-%S', run_datetime)}_{cfg.img_size}_{len(plastic_dataset.class_map)}cl_e{cfg.epochs}_acc{best_acc:.4f}_{basename(cfg.dataset_path)}.pth"
-    torch.save(best_model_wts, model_file_name)
-    print(f"Saved PyTorch best model state to {model_file_name}")
+    if cfg.mode == 'train':
+        # save best model
+        model_file_name = f"./weights/{model.__class__.__name__}_{strftime('%Y-%m-%d_%H-%M-%S', run_datetime)}_{cfg.img_size}_{len(plastic_dataset.class_map)}cl_e{cfg.epochs}_acc{best_acc:.4f}_{basename(cfg.dataset_path)}.pth"
+        torch.save(best_model_wts, model_file_name)
+        print(f"Saved PyTorch best model state to {model_file_name}")
 
-    
 if __name__ == '__main__':
   cfg = get_args()
   main(cfg)
