@@ -38,8 +38,8 @@ class SevenPlastics(Dataset):
     def get_data(self):
         x, y = [], []
     
-        class_id = 0
-        for class_name in os.listdir(self.dataset_path):
+        class_id = 1
+        for class_name in sorted(os.listdir(self.dataset_path)):
             self.class_map[class_name] = class_id
             img_path = os.path.join(self.dataset_path, class_name)
             if os.path.isdir(img_path):
