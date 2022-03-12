@@ -1,0 +1,14 @@
+= render @recycler
+
+%h2 Категории
+
+%ul
+  - @recycler.categories.each do |cagegory|
+    %li= link_to cagegory.name, cagegory
+
+%div
+  = link_to "Edit this recycler", edit_recycler_path(@recycler)
+  |
+  \#{link_to "Back to recyclers", recyclers_path}
+  
+  \#{button_to "Destroy this recycler", @recycler, method: :delete}
