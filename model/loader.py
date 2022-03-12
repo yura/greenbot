@@ -13,11 +13,11 @@ class SevenPlastics(Dataset):
         # set transforms
         if self.is_train:
             self.tranform = T.Compose([
-                T.RandomResizedCrop(224),
-#                T.Resize(cfg.img_size, Image.ANTIALIAS),
+#                T.RandomResizedCrop(224),
+                T.Resize(cfg.img_size, Image.ANTIALIAS),
                 T.RandomHorizontalFlip(),
                 T.RandomRotation(15),
-#                T.CenterCrop(cfg.img_size),
+                T.CenterCrop(cfg.img_size),
                 T.ToTensor()
             ])
         else:
