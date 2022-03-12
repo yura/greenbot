@@ -16,11 +16,13 @@ class SevenPlastics(Dataset):
                 T.Resize(cfg.img_size, Image.ANTIALIAS),
                 T.RandomRotation(180),
                 T.RandomHorizontalFlip(),
+                T.CenterCrop(cfg.img_size),
                 T.ToTensor()
             ])
         else:
             self.tranform = T.Compose([
                 T.Resize(cfg.img_size, Image.ANTIALIAS),
+                T.CenterCrop(cfg.img_size),
                 T.ToTensor()
             ])
         self.normalize = T.Compose([T.Normalize(cfg.norm_mean, cfg.norm_std)])
@@ -38,7 +40,7 @@ class SevenPlastics(Dataset):
     def get_data(self):
         x, y = [], []
     
-        class_id = 1
+        class_id = 0
         for class_name in sorted(os.listdir(self.dataset_path)):
             self.class_map[class_name] = class_id
             img_path = os.path.join(self.dataset_path, class_name)
@@ -47,7 +49,6 @@ class SevenPlastics(Dataset):
                     x.append(os.path.join(img_path, img_name))
                     y.append(class_id)
             class_id += 1
-        print(f"self.class_map: {self.class_map}")
 
         assert len(x) == len(y), "Number of x and y should be same!"
 
