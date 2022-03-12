@@ -9,7 +9,7 @@
 # The default is “development”.
 environment 'production'
 
-application_path = '/var/www/xt'
+application_path = '/var/www/greenbot/web'
 
 # Daemonize the server into the background. Highly suggest that
 # this be combined with “pidfile” and “stdout_redirect”.
