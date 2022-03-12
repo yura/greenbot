@@ -3,8 +3,73 @@ from config import *
 import torch
 from torchvision import models
 from torch.utils.data import DataLoader, random_split
+import torch.nn as nn
+import torch.optim as optim
+from time import time, localtime
+
+def train(dataloader, model, loss_fn, optimizer, scheduler, device):
+    size = len(dataloader.dataset)
+    model.train()
     
+    running_loss = 0.0
+    running_corrects = 0
+    
+    for batch, (X, y) in enumerate(dataloader):
+        X, y = X.to(device), y.to(device)
+        
+        optimizer.zero_grad()
+        
+        # compute prediction error
+        outputs = model(X)
+        _, preds = torch.max(outputs, 1)
+        loss = loss_fn(outputs, y)
+        
+        # backprop
+        loss.backward()
+        optimizer.step()
+        
+        # statistics
+        running_loss += loss.item() * X.size(0)
+        running_corrects += torch.sum(preds == y.data)
+        
+    epoch_loss = running_loss / size
+    epoch_acc = running_corrects.double() / size
+    
+    print(f"Train Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+
+def test(dataloader, model, loss_fn, device, mode):
+    size = len(dataloader.dataset)
+    num_batches = len(dataloader)
+    
+    best_model_wts = copy.deepcopy(model.state_dict())
+    best_acc = 0.0
+    
+    model.eval()
+    running_loss = 0.0
+    running_corrects = 0
+    
+    with torch.no_grad():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            
+            outputs = model(X)
+            _, preds = torch.max(outputs, 1)
+            
+            loss = loss_fn(outputs, y)
+            
+            # statistics
+            running_loss += loss.item() * X.size(0)
+            running_corrects += torch.sum(preds == y.data)
+            
+    epoch_loss = running_loss / size
+    epoch_acc = running_corrects.double() / size
+    print(f"Test Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+    
+    return epoch_acc
+    
+
 def main(cfg):
+    run_datetime = localtime()
     cfg.norm_mean, cfg.norm_std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
     # get cpu or gpu device for training
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -25,7 +90,49 @@ def main(cfg):
         test_dataloader = DataLoader(test_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
         print(f"train/test dataloader length: {len(train_dataloader.dataset)}/{len(test_dataloader.dataset)}")
         print(f"train/test dataloader batches: {len(train_dataloader)}/{len(test_dataloader)}")
+    
+    # load weights
+    if cfg.mode == "train":
+        model = models.mobilenet_v3_large(pretrained=True)
+        # finetuning the convnet
+        model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(train_data.class_map))
+    
+    model = model.to(device)
 
+    # criterion
+    loss_fn = nn.CrossEntropyLoss()
+    # optimizer
+    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
+    # decay LR by a factor 0.1 every 5 epochs
+    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    
+    
+    since = time()
+    predicted_classes_dict = {}
+    epoch_acc = 0.0
+    best_acc = 0.0
+
+    if not cfg.mode == 'train':
+        cfg.epochs = 1
+        
+    for t in range(cfg.epochs):
+    
+        if cfg.mode == "train":
+            print(f"\nEpoch {t+1}/{cfg.epochs}\n{'-'*20}")
+            train(train_dataloader, model, loss_fn, optimizer, exp_lr_scheduler, device)
+            exp_lr_scheduler.step()
+        
+        epoch_acc = test(test_dataloader, model, loss_fn, device, cfg.mode)
+        
+        # deep copy the best model
+        if cfg.mode == "train" and epoch_acc > best_acc:
+          best_acc = epoch_acc
+          best_model_wts = copy.deepcopy(model.state_dict())
+          print(f"Best model with accuracy: {best_acc:.4f}")
+        
+    time_elapsed = time() - since
+    print(f"\n{cfg.mode.capitalize()} is done in {(time_elapsed // 60):.0f}m {(time_elapsed % 60):.0f}s")
+    
 if __name__ == '__main__':
   cfg = get_args()
   main(cfg)

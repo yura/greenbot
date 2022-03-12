@@ -12,6 +12,8 @@ def get_args():
                         help="train batch size (default: 8)")
     parser.add_argument("--workers", default=4, type=int,
                         help="number of data loading workers (default: 4)")
+    parser.add_argument("--epochs", type=int, default=100,
+                        help="number of epochs to train (default: 100)")
     args = parser.parse_args()
     
     return args
