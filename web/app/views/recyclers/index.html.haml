@@ -1,0 +1,22 @@
+%div{:style => "float:right"}
+  = link_to "Добавить пункт приёма", new_recycler_path
+
+%h1 Пункты приёма
+
+Категории:
+= search_form_for @q do |f|
+  - Category.all.each do |category|
+    = f.check_box :recycler_categories_category_id_in, {multiple: true}, category.id , nil
+    = category.name
+  = f.submit 'Показать'
+
+#map{:style => "height: 800px;"}
+  = render 'js'
+
+%table#recyclers
+  - @recyclers.each do |recycler|
+    %h3
+      = link_to recycler.name, recycler
+      %small= recycler.categories.map { |c| link_to c.name, c }.join(', ').html_safe
+    %span{ style: 'color: #444;'}= recycler.address
+

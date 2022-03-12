@@ -1,0 +1,31 @@
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoieXVyeWtvdGx5YXJvdiIsImEiOiJja2M5NGM0djYwOTFqMnhsa2J4ZW1vbHBzIn0.475kMy3wnzKILq9XbTcXig';
+
+  var map = new mapboxgl.Map({
+    container: 'map', // container ID
+    style: 'mapbox://styles/mapbox/streets-v11', // style URL
+    center: [38.9884211, 45.0461317], // starting position [lng, lat]
+    zoom: 13 // starting zoom
+  });
+
+  if (mapboxgl.getRTLTextPluginStatus() === 'unavailable') {
+    mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
+  }
+
+  map.addControl(new MapboxLanguage({
+    defaultLanguage: 'ru'
+  }));
+
+  <% @recyclers.each do |recycler| %>
+    var popup_<%= recycler.id %> = new mapboxgl.Popup({ offset: 25 }).setHTML(
+      '<h3><%= recycler.name&.html_safe %></h3>' +
+      '<p><%= recycler.address %></p>' + 
+      '<ul><%= recycler.categories.map { |c| "<li>#{link_to c.name, c}</li>" }.join("").html_safe %></ul>'
+    );
+ 
+    var marker_<%= recycler.id %> = new mapboxgl.Marker()
+      .setLngLat([<%= recycler.lon %>, <%= recycler.lat %>])
+      .setPopup(popup_<%= recycler.id %>) 
+      .addTo(map);
+  <% end %>
+</script>

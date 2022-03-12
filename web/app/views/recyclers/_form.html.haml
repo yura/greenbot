@@ -1,0 +1,15 @@
+= simple_form_for recycler do |f|
+  = f.input :name
+  = f.input :description
+  = f.association :city
+  = f.input :address
+  = f.input :phone, as: :tel
+  = f.input :email, as: :email
+  = f.input :url, as: :url
+  = f.input :lon
+  = f.input :lat
+
+  %h2 Категории
+  = f.association :categories, as: :check_boxes
+
+  = f.submit

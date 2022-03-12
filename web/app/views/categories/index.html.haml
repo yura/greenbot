@@ -1,0 +1,9 @@
+%div{ style: 'float: right' }
+  = link_to 'Добавить категорию', new_category_path
+
+%h1 Категории
+
+#categories
+  - @categories.each do |category|
+    %li= link_to "#{category.name} (#{category.recyclers.count})", category
+

@@ -66,6 +66,6 @@ class RecyclersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def recycler_params
-      params.require(:recycler).permit(:name, :description, :phone, :email, :city_id, :address, :url)
+      params.require(:recycler).permit(:name, :description, :phone, :email, :city_id, :address, :url, :lon, :lat, category_ids: [])
     end
 end

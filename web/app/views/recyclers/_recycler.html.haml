@@ -1,0 +1,26 @@
+%div{:id => "#{dom_id recycler}"}
+  %h1= recycler.name
+
+  = recycler.description
+
+  %p
+    %strong Координаты:
+    = recycler.lat
+    ,
+    \#{recycler.lon}
+  %p
+    %strong Город:
+    = link_to recycler.city.name, recycler.city
+  %p
+    %strong Адрес:
+    = recycler.address
+  %p
+    %strong Телефон:
+    = recycler.phone
+  %p
+    %strong E-mail:
+    = recycler.email
+  %p
+    %strong URL:
+    - if recycler.url
+      = link_to recycler.url, recycler.url, target: '_blank'
