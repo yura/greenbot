@@ -120,12 +120,12 @@ def main(cfg):
     # criterion
     loss_fn = nn.CrossEntropyLoss()
     # optimizer
-    optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
 #    optimizer = optim.Adam(model.parameters(), lr=3e-2, betas=(0.9, 0.999))
 #    optimizer =
     
     # decay LR by a factor 0.1 every 5 epochs
-    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+#    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
     
     
     since = time()
@@ -141,7 +141,7 @@ def main(cfg):
         if cfg.mode == "train":
             print(f"\nEpoch {t+1}/{cfg.epochs}\n{'-'*20}")
             train(train_dataloader, model, loss_fn, optimizer, device)
-            exp_lr_scheduler.step()
+#            exp_lr_scheduler.step()
         
         epoch_acc = test(test_dataloader, model, loss_fn, device, cfg.mode)
         
