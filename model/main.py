@@ -116,6 +116,7 @@ def main(cfg):
     loss_fn = nn.CrossEntropyLoss()
     # optimizer
     optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
+    
     # decay LR by a factor 0.1 every 5 epochs
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
