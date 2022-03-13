@@ -16,6 +16,9 @@ def get_args():
                         help="number of epochs to train (default: 100)")
     parser.add_argument("--checkpoint", default="", type=str,
                         help="file with saved checkpoint")
+    parser.add_argument("--img_path", default="./datasets/seven_plastics/AORA7148.jpg", type=str,
+                        help="single image path (for prediction)")
+                        
     args = parser.parse_args()
     
     return args

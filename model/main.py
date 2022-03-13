@@ -2,8 +2,9 @@
 Examples:
 python3 main.py --epochs 5 --dataset_path ./datasets/seven_plastics_small
 python3 main.py --mode test --dataset_path ./datasets/seven_plastics_small --checkpoint ./weights/MobileNetV3_2022-03-12_09-36-15_224_8cl_e100_acc0.8495_seven_plastics.pth
-
+python3 main.py --mode predict --img_path ./datasets/seven_plastics/3_polyvinylchloride_PVC/IMG_6443.jpg --checkpoint ./weights/MobileNetV3_2022-03-12_09-36-15_224_8cl_e100_acc0.8495_seven_plastics.pth
 '''
+
 
 from loader import *
 from config import *
@@ -15,6 +16,8 @@ import torch.optim as optim
 from time import time, localtime, strftime
 import copy
 from os.path import basename
+
+CLASS_NAMES = {'1_polyethylene_PET': 0, '2_high_density_polyethylene_PE-HD': 1, '3_polyvinylchloride_PVC': 2, '4_low_density_polyethylene_PE-LD': 3, '5_polypropylene_PP': 4, '6_polystyrene_PS': 5, '7_other_resins': 6, '8_no_plastic': 7}
 
 def train(dataloader, model, loss_fn, optimizer, device):
     size = len(dataloader.dataset)
@@ -46,7 +49,7 @@ def train(dataloader, model, loss_fn, optimizer, device):
     
     print(f"Train Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
 
-def test(dataloader, model, loss_fn, device, mode):
+def test(dataloader, model, loss_fn, device):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     
@@ -60,7 +63,6 @@ def test(dataloader, model, loss_fn, device, mode):
     with torch.no_grad():
         for X, y in dataloader:
             X, y = X.to(device), y.to(device)
-            
             outputs = model(X)
             _, preds = torch.max(outputs, 1)
             
@@ -76,6 +78,22 @@ def test(dataloader, model, loss_fn, device, mode):
     
     return epoch_acc
     
+def predict(cfg, model, device):
+    transform = T.Compose([
+                T.Resize(cfg.img_size, Image.ANTIALIAS),
+                T.CenterCrop(cfg.img_size),
+                T.ToTensor(),
+                T.Normalize(cfg.norm_mean, cfg.norm_std)
+            ])
+    X = Image.open(cfg.img_path)
+    X = transform(X)
+    X = torch.unsqueeze(X, 0)
+    X = X.to(device)
+    with torch.no_grad():
+        outputs = model(X)
+    predicted_class = outputs[0].argmax(0)
+    
+    return predicted_class
 
 def main(cfg):
     run_datetime = localtime()
@@ -85,6 +103,7 @@ def main(cfg):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using {device} device")
     
+    # get data from dataset
     plastic_dataset = SevenPlastics(cfg)
     if cfg.mode == "train":
 #        train_data = SevenPlastics(cfg)
@@ -108,7 +127,7 @@ def main(cfg):
         print(f"train/test dataloader length: {len(train_dataloader.dataset)}/{len(test_dataloader.dataset)}")
         print(f"train/test dataloader batches: {len(train_dataloader)}/{len(test_dataloader)}")
     # for test and predict
-    else:
+    elif cfg.mode == "test":
         test_dataloader = DataLoader(plastic_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.workers)
         print(f"test dataloader length: {len(test_dataloader.dataset)}")
         print(f"test dataloader batches: {len(test_dataloader)}")
@@ -123,12 +142,13 @@ def main(cfg):
             
         # finetuning the convnet
         model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features,  out_features=len(plastic_dataset.class_map))
+        
     elif cfg.checkpoint:
         print(f"loading model from checkpoint...")
-        model = models.mobilenet_v3_large()
-    
+        model = models.mobilenet_v3_large(width_mult=1.0,  reduced_tail=False, dilated=False)
+        print(f"elif cfg.checkpoint: plastic_dataset.class_map): {plastic_dataset.class_map}")
         # finetuning the convnet
-        model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features, out_features=len(plastic_dataset.class_map))
+        model.classifier[3] = nn.Linear(in_features=model.classifier[3].in_features, out_features=len(CLASS_NAMES))
         model.load_state_dict(torch.load(cfg.checkpoint, map_location=torch.device(device)))
     else:
         raise NotImplementedError(f"Set [--checkpoint] argument value for model testing. Current value: checkpoint={cfg.checkpoint}")
@@ -159,8 +179,13 @@ def main(cfg):
             train(train_dataloader, model, loss_fn, optimizer, device)
             exp_lr_scheduler.step()
         
-        epoch_acc = test(test_dataloader, model, loss_fn, device, cfg.mode)
+        if cfg.mode in ["test", "train"]:
+            epoch_acc = test(test_dataloader, model, loss_fn, device)
         
+        if cfg.mode == "predict":
+            predicted_class_id = predict(cfg, model, device)
+            print(f"Predicted class: {list(CLASS_NAMES.keys())[predicted_class_id.item()]}")
+            
         # deep copy the best model
         if cfg.mode == "train" and epoch_acc > best_acc:
           best_acc = epoch_acc
