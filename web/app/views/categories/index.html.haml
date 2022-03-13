@@ -5,5 +5,5 @@
 
 #categories
   - @categories.each do |category|
-    %li= link_to "#{category.name} (#{category.recyclers.count})", category
+    %li= link_to "#{category.name} (#{category.recycler_categories.count})", category
 
