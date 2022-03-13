@@ -44,7 +44,6 @@ def w(msg):
     else:
         url = category_urls[msg.text]
         category = requests.get(url).json()
-        #bot.send_message(msg.chat.id, category['recyclers'][0]['address'])
         bot.send_message(msg.chat.id, concat_addresses(category))
 
 
